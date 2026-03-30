@@ -100,7 +100,53 @@ for (index, line) in originalHex.lines.enumerated() {
 }
 ```
 
+## WASM (Separated from the Core Library API)
+
+To avoid impacting existing downstream users, this repository adds a separate module `IchingWasm`. The original `Iching` API remains unchanged.
+
+- Core library: `import Iching`
+- WASM wrapper: `import IchingWasm` (C ABI exports)
+
+Exported functions:
+
+- `iching_divine_once(language: Int32) -> UnsafeMutablePointer<CChar>?`
+- `iching_free_string(pointer)`
+
+`language` enum values:
+
+- `0`: traditionalChinese
+- `1`: simplifiedChinese
+- `2`: japanese
+- `3`: english
+
+`iching_divine_once` returns a JSON string. Call `iching_free_string` after consuming the pointer.
+
+Build WASM (Swift version must match the WASI SDK major/minor, e.g. 6.2.x + 6.2-RELEASE-wasm32-unknown-wasip1):
+
+```bash
+# Build only the WASM wrapper target
+swiftly run swift build +6.2.0 --swift-sdk 6.2-RELEASE-wasm32-unknown-wasip1 -c release --target IchingWasm
+
+# Build executable wasm output (example: IchingDemo.wasm)
+swiftly run swift build +6.2.0 --swift-sdk 6.2-RELEASE-wasm32-unknown-wasip1 -c release --product IchingDemo
+```
+
+Generate a minimal browser demo:
+
+```bash
+./scripts/generate_web_demo.sh
+```
+
+This creates `web-demo/` with `index.html`, `main.js`, and `IchingDemo.wasm`.
+
+Because of browser security restrictions, serve it over HTTP (do not open `index.html` directly):
+
+```bash
+cd web-demo && python3 -m http.server 8000
+```
+
+Then open `http://127.0.0.1:8000`.
+
 ## License
 
 MIT License
-

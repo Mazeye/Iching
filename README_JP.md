@@ -99,7 +99,53 @@ for (index, line) in originalHex.lines.enumerated() {
 }
 ```
 
+## WASM（コアライブラリAPIとは分離）
+
+既存の下流ユーザーへ影響を与えないため、`IchingWasm` という独立モジュールを追加しています。既存の `Iching` API は変更していません。
+
+- コアライブラリ：`import Iching`
+- WASM ラッパー：`import IchingWasm`（C ABI エクスポート）
+
+公開関数：
+
+- `iching_divine_once(language: Int32) -> UnsafeMutablePointer<CChar>?`
+- `iching_free_string(pointer)`
+
+`language` の値：
+
+- `0`: traditionalChinese
+- `1`: simplifiedChinese
+- `2`: japanese
+- `3`: english
+
+`iching_divine_once` は JSON 文字列を返します。利用後は `iching_free_string` で解放してください。
+
+WASM ビルド（Swift 本体と WASI SDK のメジャー/マイナーを合わせる必要があります。例: 6.2.x + 6.2-RELEASE-wasm32-unknown-wasip1）：
+
+```bash
+# WASM ラッパーのみビルド
+swiftly run swift build +6.2.0 --swift-sdk 6.2-RELEASE-wasm32-unknown-wasip1 -c release --target IchingWasm
+
+# 実行可能 wasm を生成（例: IchingDemo.wasm）
+swiftly run swift build +6.2.0 --swift-sdk 6.2-RELEASE-wasm32-unknown-wasip1 -c release --product IchingDemo
+```
+
+最小ブラウザデモ生成スクリプト：
+
+```bash
+./scripts/generate_web_demo.sh
+```
+
+`web-demo/`（`index.html` / `main.js` / `IchingDemo.wasm`）が生成されます。
+
+ブラウザの制約により、直接 `index.html` を開かず、静的サーバー経由で起動してください：
+
+```bash
+cd web-demo && python3 -m http.server 8000
+```
+
+その後 `http://127.0.0.1:8000` を開いてください。
+
 ## ライセンス
 
 MIT License
-
