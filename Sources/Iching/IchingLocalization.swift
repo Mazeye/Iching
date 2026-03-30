@@ -1,5 +1,3 @@
-import Foundation
-
 /// 支持的语言
 public enum IchingLanguage {
     case traditionalChinese // 繁体中文 (默认)

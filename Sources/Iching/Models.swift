@@ -1,5 +1,3 @@
-import Foundation
-
 /// 爻 (Yao)
 /// Representing the lines of a Hexagram (Gua).
 public enum Yao: Int, CustomStringConvertible, CaseIterable {
@@ -82,8 +80,6 @@ public struct Hexagram: CustomStringConvertible {
         var names: [String] = []
         for (index, line) in lines.enumerated() {
             let isYang = line.isYang
-            let numberStr: String
-            let positionStr: String
             
             // 爻题规则：
             // 阳爻称“九”，阴爻称“六”

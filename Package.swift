@@ -11,6 +11,11 @@ let package = Package(
             name: "Iching",
             targets: ["Iching"]
         ),
+        // WASM / C ABI wrapper，不影响原始 Iching API
+        .library(
+            name: "IchingWasm",
+            targets: ["IchingWasm"]
+        ),
         // 1. 新增：定义一个可执行产品，方便 swift run 调用
         .executable(
             name: "IchingDemo",
@@ -22,6 +27,10 @@ let package = Package(
         // Targets can depend on other targets in this package and products from dependencies.
         .target(
             name: "Iching"
+        ),
+        .target(
+            name: "IchingWasm",
+            dependencies: ["Iching"]
         ),
         // 2. 新增：定义可执行目标，并依赖 "Iching" 库
         .executableTarget(

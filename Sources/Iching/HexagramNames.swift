@@ -1,5 +1,3 @@
-import Foundation
-
 /// 六十四卦卦名映射
 public struct HexagramNames {
     

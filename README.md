@@ -100,6 +100,64 @@ for (index, line) in originalHex.lines.enumerated() {
 }
 ```
 
+## WASM（与原库接口分离）
+
+为了不影响现有下游用户，项目新增了独立模块 `IchingWasm`，原有 `Iching` API 保持不变。
+
+- 原库：`import Iching`
+- WASM 包装层：`import IchingWasm`（提供 C ABI 导出函数）
+
+导出函数：
+
+- `iching_divine_once(language: Int32) -> UnsafeMutablePointer<CChar>?`
+- `iching_free_string(pointer)`
+
+`language` 枚举值：
+
+- `0`: traditionalChinese
+- `1`: simplifiedChinese
+- `2`: japanese
+- `3`: english
+
+`iching_divine_once` 返回 JSON 字符串（调用后请用 `iching_free_string` 释放内存），结构示例：
+
+```json
+{
+  "originalName": "乾",
+  "transformedName": "姤",
+  "originalLines": [7, 9, 7, 7, 8, 7],
+  "transformedLines": [7, 8, 7, 7, 8, 7],
+  "lineNames": ["初九", "九二", "九三", "九四", "六五", "上九"],
+  "logs": ["=== 大衍之數起卦開始 ===", "..."]
+}
+```
+
+构建 WASM（需要 Swift WASI SDK；`swift` 主版本需与 SDK 对齐，例如 6.2.x + 6.2-RELEASE-wasm32-unknown-wasip1）：
+
+```bash
+# 仅编译 WASM 包装目标（验证导出层可编译）
+swiftly run swift build +6.2.0 --swift-sdk 6.2-RELEASE-wasm32-unknown-wasip1 -c release --target IchingWasm
+
+# 产出可执行 wasm 文件（示例：IchingDemo.wasm）
+swiftly run swift build +6.2.0 --swift-sdk 6.2-RELEASE-wasm32-unknown-wasip1 -c release --product IchingDemo
+```
+
+最小网页 Demo 生成脚本：
+
+```bash
+./scripts/generate_web_demo.sh
+```
+
+脚本会生成 `web-demo/`（包含 `index.html`、`main.js`、`IchingDemo.wasm`）。
+
+由于浏览器安全策略，需用静态服务器打开（不能直接双击 `index.html`）：
+
+```bash
+cd web-demo && python3 -m http.server 8000
+```
+
+然后访问：`http://127.0.0.1:8000`
+
 ## 许可证
 
 MIT License

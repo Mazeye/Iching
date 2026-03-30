@@ -1,5 +1,3 @@
-import Foundation
-
 /// 大衍之数起卦法模拟器
 public class YarrowDiviner {
     
